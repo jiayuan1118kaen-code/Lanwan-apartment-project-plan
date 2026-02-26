@@ -1,7 +1,7 @@
 import { ProjectPlan } from '../services/gemini';
 
 export const DEMO_PROJECT_PLAN: ProjectPlan = {
-  projectName: "非居改保项目 (2025-2026)",
+  projectName: "蓝湾公寓 (2025-2026)",
   tasks: [
     // 1. 非居改保
     {
@@ -11,7 +11,9 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "获取非居改保认定书",
       start: "2025-12-08",
       end: "2026-03-02",
-      progress: 60
+      actualStart: "2025-12-10",
+      actualEnd: "2026-03-05",
+      progress: 100
     },
     // 2. 设计
     {
@@ -21,6 +23,8 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "户型设计方案",
       start: "2025-12-01",
       end: "2025-12-31",
+      actualStart: "2025-12-01",
+      actualEnd: "2025-12-25",
       progress: 100
     },
     {
@@ -30,7 +34,8 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "公区设计方案",
       start: "2025-12-11",
       end: "2025-12-31",
-      progress: 100
+      actualStart: "2025-12-15",
+      progress: 80
     },
     {
       id: "2-3",

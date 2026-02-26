@@ -7,6 +7,8 @@ export interface Task {
   name: string;
   start: string; // ISO date
   end: string;   // ISO date
+  actualStart?: string; // ISO date
+  actualEnd?: string;   // ISO date
   progress: number; // 0-100
   dependencies?: string[]; // IDs of tasks this task depends on
   assignee?: string;
@@ -43,6 +45,8 @@ export async function parseProjectPlan(text: string): Promise<ProjectPlan> {
                 name: { type: Type.STRING },
                 start: { type: Type.STRING },
                 end: { type: Type.STRING },
+                actualStart: { type: Type.STRING },
+                actualEnd: { type: Type.STRING },
                 progress: { type: Type.NUMBER },
                 dependencies: {
                   type: Type.ARRAY,
