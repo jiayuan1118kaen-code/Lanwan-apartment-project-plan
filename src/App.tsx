@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { TaskLookup } from './components/TaskLookup';
 import { GanttChart } from './components/GanttChart';
@@ -14,9 +14,24 @@ import { addDays, differenceInDays, parseISO, format } from 'date-fns';
 import * as XLSX from 'xlsx';
 
 export default function App() {
-  const [plan, setPlan] = useState<ProjectPlan>(DEMO_PROJECT_PLAN);
+  const [plan, setPlan] = useState<ProjectPlan>(() => {
+    const savedPlan = localStorage.getItem('gantt-plan');
+    if (savedPlan) {
+      try {
+        return JSON.parse(savedPlan);
+      } catch (e) {
+        console.error('Failed to parse saved plan, using default.', e);
+        return DEMO_PROJECT_PLAN;
+      }
+    }
+    return DEMO_PROJECT_PLAN;
+  });
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [importModal, setImportModal] = useState<{ show: boolean; tasks: Task[] }>({ show: false, tasks: [] });
+
+  useEffect(() => {
+    localStorage.setItem('gantt-plan', JSON.stringify(plan));
+  }, [plan]);
 
   const handleUpdateTask = (taskId: string, updates: Partial<Task>) => {
     setPlan(prev => {

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { format, differenceInDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO, isWeekend } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { motion } from 'motion/react';
+import Select from 'react-select';
 import { Task } from '../services/gemini';
 import { Calendar as CalendarIcon, LayoutDashboard } from 'lucide-react';
 
@@ -18,6 +19,26 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
   const isSyncingRight = useRef(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showSidebar, setShowSidebar] = useState(true);
+
+  const [selectedMilestoneNames, setSelectedMilestoneNames] = useState<string[]>([
+    '非居改保认定书',
+    '全套施工图',
+    '样板间评审',
+    '施工许可证',
+    '空气检测及报告',
+    '联合验收',
+    '开业'
+  ]);
+
+  const keyMilestones = useMemo(() => {
+    return tasks
+      .filter(task => selectedMilestoneNames.includes(task.name))
+      .sort((a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime());
+  }, [tasks, selectedMilestoneNames]);
+
+  const taskOptions = useMemo(() => {
+    return tasks.map(task => ({ value: task.name, label: task.name }));
+  }, [tasks]);
 
   const { startDate, endDate, allDates } = useMemo(() => {
     if (tasks.length === 0) return { startDate: new Date(), endDate: new Date(), totalDays: 0, allDates: [] };
@@ -109,6 +130,43 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
             onChange={handleDateChange}
             className="w-full sm:w-auto bg-white border border-gray-300 hover:border-indigo-500 text-gray-700 rounded-lg text-xs font-medium transition-colors shadow-sm px-3 py-1.5 cursor-pointer"
           />
+        </div>
+      </div>
+
+      {/* Key Milestones */}
+      <div className="px-4 py-3 border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-semibold text-gray-700">重要节点</h3>
+          <div className="w-full max-w-xs text-xs">
+            <Select
+              isMulti
+              options={taskOptions}
+              value={selectedMilestoneNames.map(name => ({ value: name, label: name }))}
+              onChange={(selectedOptions) => {
+                setSelectedMilestoneNames(selectedOptions.map(option => option.value));
+              }}
+              placeholder="选择要展示的节点..."
+              styles={{
+                control: (base) => ({ ...base, minHeight: '30px', height: '30px' }),
+                valueContainer: (base) => ({ ...base, height: '30px', padding: '0 6px' }),
+                input: (base) => ({ ...base, margin: '0px' }),
+                indicatorSeparator: () => ({ display: 'none' }),
+                indicatorsContainer: (base) => ({ ...base, height: '30px' }),
+              }}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-2 text-[10px]">
+          {keyMilestones.map(task => (
+            <div key={task.id} className="bg-violet-50 p-1.5 rounded-md border border-violet-200">
+              <p className="font-bold text-violet-800 truncate" title={task.name}>{task.name}</p>
+              <p className="text-violet-500">
+                <span className="font-medium">始:</span> {task.start ? format(parseISO(task.start), 'M/d') : '-'}
+                <span className="mx-1">|</span>
+                <span className="font-medium">终:</span> {task.end ? format(parseISO(task.end), 'M/d') : '-'}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 

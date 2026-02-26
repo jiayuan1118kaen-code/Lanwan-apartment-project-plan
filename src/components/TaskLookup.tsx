@@ -25,6 +25,7 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
   const [editEnd, setEditEnd] = useState<string>('');
   const [editActualStart, setEditActualStart] = useState<string>('');
   const [editActualEnd, setEditActualEnd] = useState<string>('');
+  const [autoProgress, setAutoProgress] = useState<boolean>(true);
 
   const categories = useMemo(() => {
     return Array.from(new Set(tasks.map(t => t.category || '未分类')));
@@ -70,6 +71,32 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
       setEditActualEnd(selectedTask.actualEnd || '');
     }
   }, [selectedTask]);
+
+  // Auto-calculate progress
+  useEffect(() => {
+    if (autoProgress && editActualStart && editActualEnd) {
+      const start = parseISO(editActualStart);
+      const end = parseISO(editActualEnd);
+      const today = new Date();
+      
+      if (today < start) {
+        setEditProgress(0);
+      } else if (today > end) {
+        setEditProgress(100);
+      } else {
+        const totalDuration = differenceInDays(end, start);
+        const elapsedDuration = differenceInDays(today, start);
+        if (totalDuration > 0) {
+          const progress = Math.round((elapsedDuration / totalDuration) * 100);
+          setEditProgress(Math.min(100, Math.max(0, progress)));
+        } else {
+          setEditProgress(100); // If start and end are same day, it's 100% done
+        }
+      }
+    } else if (autoProgress) {
+      setEditProgress(0);
+    }
+  }, [autoProgress, editActualStart, editActualEnd]);
 
   const searchResults = useMemo(() => {
     if (!searchTerm.trim()) return [];
@@ -281,14 +308,24 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
                     <Percent className="w-2.5 h-2.5" />
                     完成进度
                   </span>
-                  <span className="text-lg font-bold text-indigo-700">{editProgress}%</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">自动</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked={autoProgress} onChange={() => setAutoProgress(!autoProgress)} className="sr-only peer" />
+                      <div className="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
                 </div>
-                <input 
-                  type="range" min="0" max="100" step="5"
-                  value={editProgress}
-                  onChange={(e) => setEditProgress(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                />
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="range" min="0" max="100" step="5"
+                    value={editProgress}
+                    onChange={(e) => setEditProgress(parseInt(e.target.value))}
+                    disabled={autoProgress}
+                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <span className="text-lg font-bold text-indigo-700 w-12 text-right">{editProgress}%</span>
+                </div>
               </div>
 
               {/* Duration Display */}
@@ -320,14 +357,14 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
                     type="date"
                     value={editStart}
                     onChange={(e) => setEditStart(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                    className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all min-w-[120px]"
                   />
                   <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
                   <input 
                     type="date"
                     value={editEnd}
                     onChange={(e) => setEditEnd(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                    className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all min-w-[120px]"
                   />
                 </div>
               </div>
@@ -340,14 +377,14 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
                     type="date"
                     value={editActualStart}
                     onChange={(e) => setEditActualStart(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                    className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-w-[120px]"
                   />
                   <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
                   <input 
                     type="date"
                     value={editActualEnd}
                     onChange={(e) => setEditActualEnd(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                    className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-w-[120px]"
                   />
                 </div>
               </div>
