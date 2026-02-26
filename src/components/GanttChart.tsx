@@ -275,7 +275,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: durationDays * CELL_WIDTH - 6 }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="absolute top-2 h-3.5 rounded-full text-[9px] flex items-center px-2 whitespace-nowrap overflow-hidden bg-gray-100 border border-gray-300 text-gray-500"
+                      className="absolute top-2 h-3.5 rounded-full text-[9px] flex items-center px-2 whitespace-nowrap overflow-hidden bg-emerald-100 border border-emerald-300 text-emerald-700"
                       style={{ left: offsetDays * CELL_WIDTH + 3 }}
                       title={`计划: ${task.start} - ${task.end}`}
                     >

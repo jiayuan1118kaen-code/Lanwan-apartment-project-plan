@@ -20,6 +20,22 @@ interface Version {
   plan: ProjectPlan;
 }
 
+const sortTasks = (tasks: Task[], baseOrderTasks: Task[]) => {
+  const categoryOrder = Array.from(new Set(baseOrderTasks.map(t => t.category)));
+  return [...tasks].sort((a, b) => {
+    let indexA = categoryOrder.indexOf(a.category);
+    let indexB = categoryOrder.indexOf(b.category);
+    if (indexA === -1) indexA = categoryOrder.length;
+    if (indexB === -1) indexB = categoryOrder.length;
+    
+    if (indexA !== indexB) return indexA - indexB;
+    
+    const dateA = parseISO(a.start).getTime();
+    const dateB = parseISO(b.start).getTime();
+    return dateA - dateB;
+  });
+};
+
 export default function App() {
   const [plan, setPlan] = useState<ProjectPlan>(() => {
     const savedPlan = localStorage.getItem('gantt-plan');
@@ -120,10 +136,10 @@ export default function App() {
             }
           }
         }
-        return { ...prev, tasks: Array.from(taskMap.values()) };
+        return { ...prev, tasks: sortTasks(Array.from(taskMap.values()), prev.tasks) };
       }
 
-      return { ...prev, tasks: newTasks };
+      return { ...prev, tasks: sortTasks(newTasks, prev.tasks) };
     });
   };
 
@@ -134,9 +150,13 @@ export default function App() {
         id: `T-${Math.random().toString(36).substr(2, 9)}`,
         progress: 0,
       };
+      
+      const updatedTasks = [...prev.tasks, newTask];
+      const sortedTasks = sortTasks(updatedTasks, prev.tasks);
+
       return {
         ...prev,
-        tasks: [...prev.tasks, newTask]
+        tasks: sortedTasks
       };
     });
   };
