@@ -217,7 +217,7 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
           className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-medium hover:bg-indigo-100 transition-colors shadow-sm"
         >
           <PlusCircle className="w-3.5 h-3.5" />
-          新增计划
+          新增任务
         </button>
 
         {/* Search Bar */}
@@ -377,17 +377,17 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
 
               {/* Duration Display */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white border border-gray-200 rounded-md p-2 text-center">
+                <div className="bg-white border border-gray-200 rounded-md p-2 text-center flex flex-col justify-center min-h-[60px]">
                   <div className="text-[10px] text-gray-400">计划工期</div>
                   <div className="font-semibold text-base tracking-tight text-gray-700">
                     {editStart && editEnd ? Math.max(1, differenceInDays(parseISO(editEnd), parseISO(editStart)) + 1) : 0} 
                     <span className="text-xs font-normal ml-0.5">天</span>
                   </div>
                 </div>
-                <div className="bg-white border border-gray-200 rounded-md p-2 text-center">
+                <div className="bg-white border border-gray-200 rounded-md p-2 text-center flex flex-col justify-center min-h-[60px]">
                   <div className="text-[10px] text-gray-400">实际工期</div>
                   <div className="font-semibold text-base tracking-tight text-emerald-700">
-                    {editActualStart && editActualEnd ? Math.max(1, differenceInDays(parseISO(editActualEnd), parseISO(editActualStart)) + 1) : '-'} 
+                    {editActualStart && editActualEnd ? Math.max(1, differenceInDays(parseISO(editActualEnd), parseISO(editActualStart)) + 1) : '-'}
                     {editActualStart && editActualEnd && <span className="text-xs font-normal ml-0.5">天</span>}
                   </div>
                 </div>
@@ -396,44 +396,37 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
 
             {/* Right Column: Dates */}
             <div className="space-y-2">
-              {/* Planned Dates */}
-              <div className="bg-white p-2 rounded-md border border-gray-200">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold text-gray-500 flex-shrink-0">计划</span>
-                  <input 
-                    type="date"
-                    value={editStart}
-                    onChange={(e) => setEditStart(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all min-w-[120px]"
-                  />
-                  <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                  <input 
-                    type="date"
-                    value={editEnd}
-                    onChange={(e) => setEditEnd(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all min-w-[120px]"
-                  />
-                </div>
+              <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 bg-white p-2 rounded-md border border-gray-200">
+                <span className="text-[10px] font-semibold text-gray-500 flex-shrink-0">计划</span>
+                <input 
+                  type="date"
+                  value={editStart}
+                  onChange={(e) => setEditStart(e.target.value)}
+                  className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                />
+                <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                <input 
+                  type="date"
+                  value={editEnd}
+                  onChange={(e) => setEditEnd(e.target.value)}
+                  className="w-full p-1 bg-white border-gray-200 rounded text-gray-800 font-medium text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                />
               </div>
-
-              {/* Actual Dates */}
-              <div className="bg-white p-2 rounded-md border border-gray-200">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold text-emerald-600 flex-shrink-0">实际</span>
-                  <input 
-                    type="date"
-                    value={editActualStart}
-                    onChange={(e) => setEditActualStart(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-w-[120px]"
-                  />
-                  <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                  <input 
-                    type="date"
-                    value={editActualEnd}
-                    onChange={(e) => setEditActualEnd(e.target.value)}
-                    className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-w-[120px]"
-                  />
-                </div>
+              <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 bg-white p-2 rounded-md border border-gray-200">
+                <span className="text-[10px] font-semibold text-emerald-600 flex-shrink-0">实际</span>
+                <input 
+                  type="date"
+                  value={editActualStart}
+                  onChange={(e) => setEditActualStart(e.target.value)}
+                  className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                />
+                <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                <input 
+                  type="date"
+                  value={editActualEnd}
+                  onChange={(e) => setEditActualEnd(e.target.value)}
+                  className="w-full p-1 bg-white border-gray-200 rounded text-emerald-800 font-medium text-xs focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                />
               </div>
             </div>
           </div>
@@ -448,7 +441,7 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
       {isAddModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">新增计划</h3>
+            <h3 className="text-lg font-bold text-gray-900">新增任务</h3>
             
             {/* Category Select in Modal */}
             <div className="grid grid-cols-2 gap-4">

@@ -7,11 +7,18 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { TaskLookup } from './components/TaskLookup';
 import { GanttChart } from './components/GanttChart';
+import { VersionHistoryModal } from './components/VersionHistoryModal';
 import { ProjectPlan, Task } from './services/gemini';
-import { LayoutDashboard, Calendar, CheckCircle2, Download, Upload, FileDown } from 'lucide-react';
+import { LayoutDashboard, Calendar, CheckCircle2, Download, Upload, FileDown, FileText } from 'lucide-react';
 import { DEMO_PROJECT_PLAN } from './data/demoData';
 import { addDays, differenceInDays, parseISO, format } from 'date-fns';
 import * as XLSX from 'xlsx';
+
+interface Version {
+  name: string;
+  timestamp: string;
+  plan: ProjectPlan;
+}
 
 export default function App() {
   const [plan, setPlan] = useState<ProjectPlan>(() => {
@@ -28,10 +35,27 @@ export default function App() {
   });
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [importModal, setImportModal] = useState<{ show: boolean; tasks: Task[] }>({ show: false, tasks: [] });
+  const [versions, setVersions] = useState<Version[]>([]);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('gantt-plan', JSON.stringify(plan));
   }, [plan]);
+
+  useEffect(() => {
+    const savedVersions = localStorage.getItem('gantt-versions');
+    if (savedVersions) {
+      try {
+        setVersions(JSON.parse(savedVersions));
+      } catch (e) {
+        console.error('Failed to parse saved versions.', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('gantt-versions', JSON.stringify(versions));
+  }, [versions]);
 
   const handleUpdateTask = (taskId: string, updates: Partial<Task>) => {
     setPlan(prev => {
@@ -248,6 +272,37 @@ export default function App() {
     alert('导入成功！');
   };
 
+  const handleSaveVersion = (name: string) => {
+    if (!name.trim()) {
+      alert('请输入版本名称。');
+      return;
+    }
+    const newVersion: Version = {
+      name,
+      timestamp: new Date().toISOString(),
+      plan: JSON.parse(JSON.stringify(plan)) // Deep copy
+    };
+    setVersions(prev => [...prev, newVersion].sort((a, b) => b.timestamp.localeCompare(a.timestamp)));
+    alert('版本已保存！');
+  };
+
+  const handleLoadVersion = (timestamp: string) => {
+    const versionToLoad = versions.find(v => v.timestamp === timestamp);
+    if (versionToLoad) {
+      if (window.confirm(`确定要加载版本 "${versionToLoad.name}" 吗？当前未保存的修改将会丢失。`)) {
+        setPlan(versionToLoad.plan);
+        setIsVersionModalOpen(false);
+        alert(`版本 "${versionToLoad.name}" 已加载。`);
+      }
+    }
+  };
+
+  const handleDeleteVersion = (timestamp: string) => {
+    if (window.confirm('确定要删除这个版本吗？此操作不可撤销。')) {
+      setVersions(prev => prev.filter(v => v.timestamp !== timestamp));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -284,6 +339,13 @@ export default function App() {
                 <Download className="w-4 h-4" />
                 导出进度
               </button>
+              <button 
+                onClick={() => setIsVersionModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:text-indigo-600 transition-colors cursor-pointer shadow-sm font-medium"
+              >
+                <FileText className="w-4 h-4" />
+                版本历史
+              </button>
             </div>
             <span className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
@@ -307,7 +369,7 @@ export default function App() {
               placeholder="请输入项目名称..."
             />
             <p className="text-xs italic text-red-700 mt-2">
-              注意：修改数据仅保存在本地浏览器，建议每次修改后，关闭浏览器前导出备份！
+              注意：修改数据和版本历史仅保存在本地浏览器，建议每次修改后，关闭浏览器前导出备份！
             </p>
           </div>
           <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-2">
@@ -329,6 +391,13 @@ export default function App() {
             >
               <Download className="w-3.5 h-3.5" />
               导出
+            </button>
+            <button 
+              onClick={() => setIsVersionModalOpen(true)}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              版本
             </button>
           </div>
         </div>
@@ -410,6 +479,17 @@ export default function App() {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* Version History Modal */}
+      {isVersionModalOpen && (
+        <VersionHistoryModal
+          versions={versions}
+          onClose={() => setIsVersionModalOpen(false)}
+          onSaveVersion={handleSaveVersion}
+          onLoadVersion={handleLoadVersion}
+          onDeleteVersion={handleDeleteVersion}
+        />
       )}
     </div>
   );
