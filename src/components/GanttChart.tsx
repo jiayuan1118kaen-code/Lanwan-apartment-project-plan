@@ -20,6 +20,53 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showSidebar, setShowSidebar] = useState(true);
 
+  // Drag to scroll state
+  const isDragging = useRef(false);
+  const hasDragged = useRef(false);
+  const startPos = useRef({ x: 0, y: 0 });
+  const scrollPos = useRef({ top: 0, left: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent, ref: React.RefObject<HTMLDivElement | null>) => {
+    if (!ref.current) return;
+    isDragging.current = true;
+    hasDragged.current = false;
+    startPos.current = { x: e.pageX, y: e.pageY };
+    scrollPos.current = { 
+      top: ref.current.scrollTop, 
+      left: ref.current.scrollLeft 
+    };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent, ref: React.RefObject<HTMLDivElement | null>) => {
+    if (!isDragging.current || !ref.current) return;
+    
+    const dx = e.pageX - startPos.current.x;
+    const dy = e.pageY - startPos.current.y;
+    
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasDragged.current = true;
+    }
+    
+    if (hasDragged.current) {
+      e.preventDefault();
+      ref.current.scrollTop = scrollPos.current.top - dy;
+      ref.current.scrollLeft = scrollPos.current.left - dx;
+    }
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDragging.current = false;
+  };
+
+  const handleTaskClick = (taskId: string, e: React.MouseEvent) => {
+    if (hasDragged.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onTaskClick?.(taskId);
+  };
+
   const [selectedMilestoneNames, setSelectedMilestoneNames] = useState<string[]>([
     '非居改保认定书',
     '全套施工图',
@@ -185,9 +232,13 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
             <div className="hidden sm:block w-16 text-right">实际 (天)</div>
           </div>
           <div 
-            className="flex-1 overflow-y-auto divide-y divide-gray-100"
+            className="flex-1 overflow-y-auto divide-y divide-gray-100 cursor-grab active:cursor-grabbing select-none"
             ref={leftScrollRef}
             onScroll={handleLeftScroll}
+            onMouseDown={(e) => handleMouseDown(e, leftScrollRef)}
+            onMouseMove={(e) => handleMouseMove(e, leftScrollRef)}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
           >
             {tasks.map((task) => {
               const taskStart = parseISO(task.start);
@@ -203,7 +254,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
                 <div 
                   key={task.id} 
                   className={`flex items-center px-2 sm:px-4 py-3 hover:bg-gray-50 transition-colors h-16 text-[9px] sm:text-sm border-b border-gray-100 cursor-pointer ${selectedTaskId === task.id ? 'bg-indigo-50/50' : ''}`}
-                  onClick={() => onTaskClick?.(task.id)}
+                  onClick={(e) => handleTaskClick(task.id, e)}
                 >
                   <div className="w-10 sm:w-20 flex-shrink-0 truncate text-gray-500 pr-1 sm:pr-2" title={task.category}>{task.category}</div>
                   <div className="hidden sm:block w-24 flex-shrink-0 truncate text-gray-400 pr-2" title={task.subcategory}>{task.subcategory}</div>
@@ -220,7 +271,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
         <div 
           ref={rightScrollRef}
           onScroll={handleRightScroll}
-          className="flex-1 overflow-auto bg-white relative"
+          onMouseDown={(e) => handleMouseDown(e, rightScrollRef)}
+          onMouseMove={(e) => handleMouseMove(e, rightScrollRef)}
+          onMouseUp={handleMouseUpOrLeave}
+          onMouseLeave={handleMouseUpOrLeave}
+          className="flex-1 overflow-auto bg-white relative cursor-grab active:cursor-grabbing select-none"
         >
           <div className="min-w-max">
             {/* Header Row */}
@@ -268,7 +323,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
                   <div 
                     key={task.id} 
                     className={`h-16 relative flex flex-col justify-center border-b border-gray-100 z-10 group hover:bg-gray-50/50 transition-colors cursor-pointer ${selectedTaskId === task.id ? 'bg-indigo-50/30' : ''}`}
-                    onClick={() => onTaskClick?.(task.id)}
+                    onClick={(e) => handleTaskClick(task.id, e)}
                   >
                     {/* Planned Bar */}
                     <motion.div
