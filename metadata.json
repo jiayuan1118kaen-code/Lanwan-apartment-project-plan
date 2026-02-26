@@ -1,0 +1,5 @@
+{
+  "name": "Project Plan Visualizer",
+  "description": "Visualize project plans as interactive Gantt charts and timelines. Paste your plan and let AI structure it.",
+  "requestFramePermissions": []
+}
