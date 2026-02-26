@@ -9,7 +9,7 @@ import { TaskLookup } from './components/TaskLookup';
 import { GanttChart } from './components/GanttChart';
 import { VersionHistoryModal } from './components/VersionHistoryModal';
 import { ProjectPlan, Task } from './services/gemini';
-import { LayoutDashboard, Calendar, CheckCircle2, Download, Upload, FileDown, FileText } from 'lucide-react';
+import { LayoutDashboard, Calendar, CheckCircle2, Download, Upload, FileDown, FileText, ArrowUp } from 'lucide-react';
 import { DEMO_PROJECT_PLAN } from './data/demoData';
 import { addDays, differenceInDays, parseISO, format } from 'date-fns';
 import * as XLSX from 'xlsx';
@@ -53,6 +53,19 @@ export default function App() {
   const [importModal, setImportModal] = useState<{ show: boolean; tasks: Task[] }>({ show: false, tasks: [] });
   const [versions, setVersions] = useState<Version[]>([]);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     localStorage.setItem('gantt-plan', JSON.stringify(plan));
@@ -159,6 +172,21 @@ export default function App() {
         tasks: sortedTasks
       };
     });
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    if (window.confirm('确定要删除此任务吗？此操作不可撤销。')) {
+      setPlan(prev => ({
+        ...prev,
+        tasks: prev.tasks.filter(t => t.id !== taskId).map(t => ({
+          ...t,
+          dependencies: t.dependencies?.filter(depId => depId !== taskId)
+        }))
+      }));
+      if (selectedTaskId === taskId) {
+        setSelectedTaskId('');
+      }
+    }
   };
 
   const handleExportExcel = () => {
@@ -426,6 +454,7 @@ export default function App() {
           tasks={plan.tasks} 
           onUpdateTask={handleUpdateTask} 
           onAddTask={handleAddTask}
+          onDeleteTask={handleDeleteTask}
           selectedTaskId={selectedTaskId}
           onSelectTask={setSelectedTaskId}
         />
@@ -510,6 +539,17 @@ export default function App() {
           onLoadVersion={handleLoadVersion}
           onDeleteVersion={handleDeleteVersion}
         />
+      )}
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all z-50 flex items-center justify-center"
+          title="回到顶部"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
       )}
     </div>
   );

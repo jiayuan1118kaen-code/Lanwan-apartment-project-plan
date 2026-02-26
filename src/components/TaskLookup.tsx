@@ -2,17 +2,18 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Task } from '../services/gemini';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { Calendar, Clock, ArrowRight, Search, Percent, Save, PlusCircle } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, Search, Percent, Save, PlusCircle, Trash2 } from 'lucide-react';
 
 interface TaskLookupProps {
   tasks: Task[];
   onUpdateTask?: (taskId: string, updates: Partial<Task>) => void;
   onAddTask?: (task: Omit<Task, 'id' | 'progress'>) => void;
+  onDeleteTask?: (taskId: string) => void;
   selectedTaskId?: string;
   onSelectTask?: (taskId: string) => void;
 }
 
-export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onAddTask, selectedTaskId, onSelectTask }) => {
+export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onAddTask, onDeleteTask, selectedTaskId, onSelectTask }) => {
   const [category, setCategory] = useState<string>('');
   const [subcategory, setSubcategory] = useState<string>('');
   const [taskId, setTaskId] = useState<string>('');
@@ -333,15 +334,26 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
               <h3 className="text-xs font-bold text-gray-800 truncate" title={selectedTask.name}>{selectedTask.name}</h3>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">{selectedTask.category} / {selectedTask.subcategory}</p>
             </div>
-            {hasChanges && (
-              <button 
-                onClick={handleSave}
-                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors shadow-sm w-full sm:w-auto flex-shrink-0"
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {hasChanges && (
+                <button 
+                  onClick={handleSave}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+                >
+                  <Save className="w-3 h-3" />
+                  保存
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  if (onDeleteTask) onDeleteTask(selectedTask.id);
+                }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 transition-colors shadow-sm border border-red-200"
               >
-                <Save className="w-3 h-3" />
-                保存
+                <Trash2 className="w-3 h-3" />
+                删除
               </button>
-            )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
