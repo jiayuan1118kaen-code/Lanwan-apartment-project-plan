@@ -227,9 +227,9 @@ export default function App() {
             <div className="bg-indigo-600 p-2 rounded-lg">
               <LayoutDashboard className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-gray-900">蓝湾公寓计划管理系统</h1>
+            <h1 className="text-xl font-bold tracking-tight text-gray-900">公寓计划管理</h1>
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="hidden md:flex items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-2 mr-4 border-r border-gray-200 pr-4">
               <button 
                 onClick={handleDownloadTemplate}
@@ -264,7 +264,42 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 space-y-4 md:space-y-6">
+        
+        {/* Project Settings */}
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">项目名称</label>
+            <input 
+              type="text" 
+              value={plan.projectName}
+              onChange={(e) => setPlan(prev => ({ ...prev, projectName: e.target.value }))}
+              className="w-full text-lg font-bold text-gray-900 bg-transparent border-b-2 border-transparent hover:border-gray-200 focus:border-indigo-500 focus:outline-none transition-all px-0 py-1"
+              placeholder="请输入项目名称..."
+            />
+          </div>
+          <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-2">
+            <button 
+              onClick={handleDownloadTemplate}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              模板
+            </button>
+            <label className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium cursor-pointer">
+              <Upload className="w-3.5 h-3.5" />
+              导入
+              <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImportExcel} />
+            </label>
+            <button 
+              onClick={handleExportExcel}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium"
+            >
+              <Download className="w-3.5 h-3.5" />
+              导出
+            </button>
+          </div>
+        </div>
         
         <TaskLookup 
           tasks={plan.tasks} 
@@ -278,13 +313,13 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{plan.projectName}</h2>
-              <p className="text-gray-500">全景计划进度表</p>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">{plan.projectName || '未命名项目'}</h2>
+              <p className="text-sm text-gray-500">全景计划进度表</p>
             </div>
             <div className="flex gap-2">
-              <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium border border-emerald-100 flex items-center gap-1.5">
+              <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs md:text-sm font-medium border border-emerald-100 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
                 {plan.tasks.length} 个任务
               </div>

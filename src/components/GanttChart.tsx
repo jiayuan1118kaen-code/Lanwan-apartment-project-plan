@@ -3,7 +3,7 @@ import { format, differenceInDays, startOfWeek, endOfWeek, eachDayOfInterval, is
 import { zhCN } from 'date-fns/locale';
 import { motion } from 'motion/react';
 import { Task } from '../services/gemini';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, LayoutDashboard } from 'lucide-react';
 
 interface GanttChartProps {
   tasks: Task[];
@@ -17,6 +17,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
   const isSyncingLeft = useRef(false);
   const isSyncingRight = useRef(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showSidebar, setShowSidebar] = useState(true);
 
   const { startDate, endDate, allDates } = useMemo(() => {
     if (tasks.length === 0) return { startDate: new Date(), endDate: new Date(), totalDays: 0, allDates: [] };
@@ -85,32 +86,45 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
   if (tasks.length === 0) return <div className="text-center p-10 text-gray-500">暂无任务</div>;
 
   return (
-    <div className="flex flex-col h-[600px] border border-gray-200 rounded-xl shadow-sm bg-white">
+    <div className="flex flex-col h-[500px] md:h-[600px] border border-gray-200 rounded-xl shadow-sm bg-white overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-gray-50/50">
-        <div className="text-sm text-gray-500">
-          项目周期: {format(startDate, 'yyyy年M月d日', { locale: zhCN })} - {format(endDate, 'yyyy年M月d日', { locale: zhCN })}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-2 border-b border-gray-200 bg-gray-50/50 gap-2">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="p-1.5 hover:bg-gray-200 rounded-md transition-colors text-gray-600 md:hidden"
+            title={showSidebar ? "隐藏列表" : "显示列表"}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+          </button>
+          <div className="text-[10px] sm:text-sm text-gray-500">
+            项目周期: {format(startDate, 'yyyy/M/d', { locale: zhCN })} - {format(endDate, 'yyyy/M/d', { locale: zhCN })}
+          </div>
         </div>
         
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <input 
             type="date" 
             value={format(selectedDate, 'yyyy-MM-dd')}
             onChange={handleDateChange}
-            className="bg-white border border-gray-300 hover:border-indigo-500 text-gray-700 rounded-lg text-sm font-medium transition-colors shadow-sm px-3 py-1.5 cursor-pointer"
+            className="w-full sm:w-auto bg-white border border-gray-300 hover:border-indigo-500 text-gray-700 rounded-lg text-xs font-medium transition-colors shadow-sm px-3 py-1.5 cursor-pointer"
           />
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Left Sidebar (Task List) */}
-        <div className="w-[460px] flex-shrink-0 border-r border-gray-200 bg-white flex flex-col z-20 shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)]">
-          <div className="bg-gray-50 border-b border-gray-200 h-[40px] flex items-center px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider flex-shrink-0">
-            <div className="w-20 flex-shrink-0">分类</div>
-            <div className="w-24 flex-shrink-0">子分类</div>
+        <div className={`
+          ${showSidebar ? 'w-[180px] sm:w-[460px]' : 'w-0'} 
+          transition-all duration-300 ease-in-out
+          flex-shrink-0 border-r border-gray-200 bg-white flex flex-col z-20 shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)] overflow-hidden
+        `}>
+          <div className="bg-gray-50 border-b border-gray-200 h-[40px] flex items-center px-2 sm:px-4 text-[9px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider flex-shrink-0">
+            <div className="w-10 sm:w-20 flex-shrink-0">分类</div>
+            <div className="hidden sm:block w-24 flex-shrink-0">子分类</div>
             <div className="flex-1">任务名称</div>
-            <div className="w-16 text-right">计划工期</div>
-            <div className="w-16 text-right">实际工期</div>
+            <div className="w-8 sm:w-16 text-right">计划</div>
+            <div className="hidden sm:block w-16 text-right">实际</div>
           </div>
           <div 
             className="flex-1 overflow-y-auto divide-y divide-gray-100"
@@ -125,21 +139,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
               let actualDurationText = '-';
               if (task.actualStart && task.actualEnd) {
                 actualDurationText = `${differenceInDays(parseISO(task.actualEnd), parseISO(task.actualStart)) + 1}天`;
-              } else if (task.actualStart) {
-                actualDurationText = '-';
               }
 
               return (
                 <div 
                   key={task.id} 
-                  className={`flex items-center px-4 py-3 hover:bg-gray-50 transition-colors h-16 text-sm border-b border-gray-100 cursor-pointer ${selectedTaskId === task.id ? 'bg-indigo-50/50' : ''}`}
+                  className={`flex items-center px-2 sm:px-4 py-3 hover:bg-gray-50 transition-colors h-16 text-[9px] sm:text-sm border-b border-gray-100 cursor-pointer ${selectedTaskId === task.id ? 'bg-indigo-50/50' : ''}`}
                   onClick={() => onTaskClick?.(task.id)}
                 >
-                  <div className="w-20 flex-shrink-0 truncate text-gray-500 text-xs pr-2" title={task.category}>{task.category}</div>
-                  <div className="w-24 flex-shrink-0 truncate text-gray-400 text-xs pr-2" title={task.subcategory}>{task.subcategory}</div>
-                  <div className="flex-1 truncate text-gray-500 text-xs pr-2" title={task.name}>{task.name}</div>
-                  <div className="w-16 text-right text-gray-400 text-xs">{durationDays}天</div>
-                  <div className="w-16 text-right text-emerald-500 text-xs">{actualDurationText}</div>
+                  <div className="w-10 sm:w-20 flex-shrink-0 truncate text-gray-500 pr-1 sm:pr-2" title={task.category}>{task.category}</div>
+                  <div className="hidden sm:block w-24 flex-shrink-0 truncate text-gray-400 text-xs pr-2" title={task.subcategory}>{task.subcategory}</div>
+                  <div className="flex-1 truncate text-gray-500 pr-1 sm:pr-2 font-medium" title={task.name}>{task.name}</div>
+                  <div className="w-8 sm:w-16 text-right text-gray-400">{durationDays}d</div>
+                  <div className="hidden sm:block w-16 text-right text-emerald-500 text-xs">{actualDurationText}</div>
                 </div>
               );
             })}
