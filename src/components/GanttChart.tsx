@@ -181,8 +181,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
             <div className="w-10 sm:w-20 flex-shrink-0">分类</div>
             <div className="hidden sm:block w-24 flex-shrink-0">子分类</div>
             <div className="flex-1">任务名称</div>
-            <div className="w-8 sm:w-16 text-right">计划</div>
-            <div className="hidden sm:block w-16 text-right">实际</div>
+            <div className="w-8 sm:w-16 text-right">计划 (天)</div>
+            <div className="hidden sm:block w-16 text-right">实际 (天)</div>
           </div>
           <div 
             className="flex-1 overflow-y-auto divide-y divide-gray-100"
@@ -196,7 +196,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
               
               let actualDurationText = '-';
               if (task.actualStart && task.actualEnd) {
-                actualDurationText = `${differenceInDays(parseISO(task.actualEnd), parseISO(task.actualStart)) + 1}天`;
+                actualDurationText = `${differenceInDays(parseISO(task.actualEnd), parseISO(task.actualStart)) + 1}`;
               }
 
               return (
@@ -206,10 +206,10 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
                   onClick={() => onTaskClick?.(task.id)}
                 >
                   <div className="w-10 sm:w-20 flex-shrink-0 truncate text-gray-500 pr-1 sm:pr-2" title={task.category}>{task.category}</div>
-                  <div className="hidden sm:block w-24 flex-shrink-0 truncate text-gray-400 text-xs pr-2" title={task.subcategory}>{task.subcategory}</div>
+                  <div className="hidden sm:block w-24 flex-shrink-0 truncate text-gray-400 pr-2" title={task.subcategory}>{task.subcategory}</div>
                   <div className="flex-1 truncate text-gray-500 pr-1 sm:pr-2 font-medium" title={task.name}>{task.name}</div>
-                  <div className="w-8 sm:w-16 text-right text-gray-400">{durationDays}d</div>
-                  <div className="hidden sm:block w-16 text-right text-emerald-500 text-xs">{actualDurationText}</div>
+                  <div className="w-8 sm:w-16 text-right text-gray-500 font-medium tabular-nums">{durationDays}</div>
+                  <div className="hidden sm:block w-16 text-right text-gray-500 font-medium tabular-nums">{actualDurationText}</div>
                 </div>
               );
             })}

@@ -347,7 +347,7 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             
             {/* Left Column: Progress & Duration */}
-            <div className="space-y-3">
+            <div className="space-y-3 flex flex-col justify-between h-full">
               {/* Progress Update */}
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-1">
@@ -395,7 +395,7 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
             </div>
 
             {/* Right Column: Dates */}
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col justify-between h-full">
               <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 bg-white p-2 rounded-md border border-gray-200">
                 <span className="text-[10px] font-semibold text-gray-500 flex-shrink-0">计划</span>
                 <input 
