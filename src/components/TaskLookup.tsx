@@ -2,16 +2,17 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Task } from '../services/gemini';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { Calendar, Clock, ArrowRight, Search, Percent, Save } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, Search, Percent, Save, PlusCircle } from 'lucide-react';
 
 interface TaskLookupProps {
   tasks: Task[];
   onUpdateTask?: (taskId: string, updates: Partial<Task>) => void;
+  onAddTask?: (task: Omit<Task, 'id' | 'progress'>) => void;
   selectedTaskId?: string;
   onSelectTask?: (taskId: string) => void;
 }
 
-export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, selectedTaskId, onSelectTask }) => {
+export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onAddTask, selectedTaskId, onSelectTask }) => {
   const [category, setCategory] = useState<string>('');
   const [subcategory, setSubcategory] = useState<string>('');
   const [taskId, setTaskId] = useState<string>('');
@@ -26,6 +27,16 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
   const [editActualStart, setEditActualStart] = useState<string>('');
   const [editActualEnd, setEditActualEnd] = useState<string>('');
   const [autoProgress, setAutoProgress] = useState<boolean>(true);
+
+  // Add Task Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newTaskName, setNewTaskName] = useState('');
+  const [newTaskStart, setNewTaskStart] = useState('');
+  const [newTaskEnd, setNewTaskEnd] = useState('');
+  const [newCategory, setNewCategory] = useState('');
+  const [newSubcategory, setNewSubcategory] = useState('');
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [showNewSubcategoryInput, setShowNewSubcategoryInput] = useState(false);
 
   const categories = useMemo(() => {
     return Array.from(new Set(tasks.map(t => t.category || '未分类')));
@@ -165,6 +176,34 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
     editActualEnd !== (selectedTask.actualEnd || '')
   );
 
+  const handleOpenAddModal = () => {
+    setNewTaskName('');
+    setNewTaskStart(format(new Date(), 'yyyy-MM-dd'));
+    setNewTaskEnd(format(new Date(), 'yyyy-MM-dd'));
+    setNewCategory(category); // Pre-fill with current selection
+    setNewSubcategory(subcategory);
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddNewTask = () => {
+    if (!newTaskName.trim() || !newTaskStart || !newTaskEnd) {
+      alert('请填写所有必填项。');
+      return;
+    }
+    if (onAddTask) {
+      onAddTask({
+        name: newTaskName,
+        category: newCategory,
+        subcategory: newSubcategory,
+        start: newTaskStart,
+        end: newTaskEnd,
+      });
+    }
+    setIsAddModalOpen(false);
+    setShowNewCategoryInput(false);
+    setShowNewSubcategoryInput(false);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-sm">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 gap-4">
@@ -172,6 +211,14 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
           <span className="w-1 h-4 bg-indigo-600 rounded-full"></span>
           任务管理与更新
         </h2>
+
+        <button 
+          onClick={handleOpenAddModal}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-medium hover:bg-indigo-100 transition-colors shadow-sm"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+          新增计划
+        </button>
 
         {/* Search Bar */}
         <div className="relative w-full lg:w-auto lg:flex-1" ref={searchRef}>
@@ -394,6 +441,92 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, sel
         ) : (
         <div className="bg-gray-50 rounded-xl p-8 border border-dashed border-gray-200 text-center">
           <p className="text-gray-400 text-sm">请选择完整的工作内容以查看或更新计划详情</p>
+        </div>
+      )}
+
+      {/* Add Task Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <h3 className="text-lg font-bold text-gray-900">新增计划</h3>
+            
+            {/* Category Select in Modal */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-500">一级分类</label>
+                <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                  <option value="">选择...</option>
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <button onClick={() => setShowNewCategoryInput(true)} className="text-xs text-indigo-600 hover:underline">+ 新增分类</button>
+                {showNewCategoryInput && (
+                  <div className="flex gap-1 pt-1">
+                    <input type="text" onBlur={(e) => { onAddTask({ name: 'New Category', category: e.target.value, subcategory: '', start: format(new Date(), 'yyyy-MM-dd'), end: format(new Date(), 'yyyy-MM-dd') }); setNewCategory(e.target.value); setShowNewCategoryInput(false); }} placeholder="新分类名" className="w-full text-xs p-1 border-gray-300 rounded" />
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-500">二级分类</label>
+                <select value={newSubcategory} onChange={(e) => setNewSubcategory(e.target.value)} disabled={!newCategory} className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                  <option value="">选择...</option>
+                  {subcategories.filter(s => tasks.some(t => t.category === newCategory && t.subcategory === s)).map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button onClick={() => setShowNewSubcategoryInput(true)} disabled={!newCategory} className="text-xs text-indigo-600 hover:underline disabled:opacity-50">+ 新增分类</button>
+                {showNewSubcategoryInput && (
+                   <div className="flex gap-1 pt-1">
+                    <input type="text" onBlur={(e) => { onAddTask({ name: 'New Subcategory', category: newCategory, subcategory: e.target.value, start: format(new Date(), 'yyyy-MM-dd'), end: format(new Date(), 'yyyy-MM-dd') }); setNewSubcategory(e.target.value); setShowNewSubcategoryInput(false); }} placeholder="新二级分类名" className="w-full text-xs p-1 border-gray-300 rounded" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500">任务名称</label>
+              <input 
+                type="text"
+                value={newTaskName}
+                onChange={(e) => setNewTaskName(e.target.value)}
+                className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                placeholder="请输入任务名称..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-500">计划开始时间</label>
+                <input 
+                  type="date"
+                  value={newTaskStart}
+                  onChange={(e) => setNewTaskStart(e.target.value)}
+                  className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-500">计划结束时间</label>
+                <input 
+                  type="date"
+                  value={newTaskEnd}
+                  onChange={(e) => setNewTaskEnd(e.target.value)}
+                  className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                取消
+              </button>
+              <button 
+                onClick={handleAddNewTask}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+              >
+                保存
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

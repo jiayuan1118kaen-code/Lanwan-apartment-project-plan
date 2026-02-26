@@ -103,6 +103,20 @@ export default function App() {
     });
   };
 
+  const handleAddTask = (task: Omit<Task, 'id' | 'progress'>) => {
+    setPlan(prev => {
+      const newTask: Task = {
+        ...task,
+        id: `T-${Math.random().toString(36).substr(2, 9)}`,
+        progress: 0,
+      };
+      return {
+        ...prev,
+        tasks: [...prev.tasks, newTask]
+      };
+    });
+  };
+
   const handleExportExcel = () => {
     const exportData = plan.tasks.map(task => ({
       '任务ID': task.id,
@@ -292,6 +306,9 @@ export default function App() {
               className="w-full text-lg font-bold text-gray-900 bg-transparent border-b-2 border-transparent hover:border-gray-200 focus:border-indigo-500 focus:outline-none transition-all px-0 py-1"
               placeholder="请输入项目名称..."
             />
+            <p className="text-xs italic text-red-700 mt-2">
+              注意：修改数据仅保存在本地浏览器，建议每次修改后，关闭浏览器前导出备份！
+            </p>
           </div>
           <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-2">
             <button 
@@ -319,6 +336,7 @@ export default function App() {
         <TaskLookup 
           tasks={plan.tasks} 
           onUpdateTask={handleUpdateTask} 
+          onAddTask={handleAddTask}
           selectedTaskId={selectedTaskId}
           onSelectTask={setSelectedTaskId}
         />
