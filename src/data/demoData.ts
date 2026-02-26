@@ -217,6 +217,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "进场准备",
       start: "2026-03-06",
       end: "2026-03-14",
+      dependencies: ["3-12"],
       progress: 0
     },
     {
@@ -280,6 +281,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "墙顶面腻子施工",
       start: "2026-05-11",
       end: "2026-05-31",
+      dependencies: ["4-7"],
       progress: 0
     },
     {
@@ -289,6 +291,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "墙顶面乳胶漆施工",
       start: "2026-06-01",
       end: "2026-06-12",
+      dependencies: ["4-8"],
       progress: 0
     },
     {
@@ -298,6 +301,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "灯具面板安装",
       start: "2026-06-13",
       end: "2026-06-24",
+      dependencies: ["4-9"],
       progress: 0
     },
     {
@@ -316,6 +320,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "整体卫浴安装",
       start: "2026-04-20",
       end: "2026-05-10",
+      dependencies: ["4-11"],
       progress: 0
     },
     {
@@ -325,6 +330,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "定制家具复尺",
       start: "2026-05-26",
       end: "2026-05-28",
+      dependencies: ["4-7"],
       progress: 0
     },
     {
@@ -334,6 +340,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "定制家具深化图",
       start: "2026-05-29",
       end: "2026-05-31",
+      dependencies: ["4-13"],
       progress: 0
     },
     {
@@ -343,6 +350,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "定制家具生产",
       start: "2026-06-01",
       end: "2026-06-25",
+      dependencies: ["4-14"],
       progress: 0
     },
     {
@@ -352,6 +360,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "定制家具到货完成",
       start: "2026-06-26",
       end: "2026-06-30",
+      dependencies: ["4-15"],
       progress: 0
     },
     {
@@ -361,6 +370,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "家具、窗帘安装",
       start: "2026-06-28",
       end: "2026-07-12",
+      dependencies: ["4-16", "4-10"],
       progress: 0
     },
     {
@@ -406,6 +416,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "开荒保洁",
       start: "2026-07-17",
       end: "2026-07-25",
+      dependencies: ["4-17"],
       progress: 0
     },
     {
@@ -415,6 +426,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "承接查验-初验",
       start: "2026-07-17",
       end: "2026-07-22",
+      dependencies: ["4-22"],
       progress: 0
     },
     {
@@ -424,6 +436,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "初验问题整改",
       start: "2026-07-23",
       end: "2026-08-01",
+      dependencies: ["4-23"],
       progress: 0
     },
     {
@@ -433,6 +446,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "承接查验-复验",
       start: "2026-08-02",
       end: "2026-08-07",
+      dependencies: ["4-24"],
       progress: 0
     },
     {
@@ -442,6 +456,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "复验问题整改",
       start: "2026-08-08",
       end: "2026-08-17",
+      dependencies: ["4-25"],
       progress: 0
     },
     {
@@ -451,6 +466,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "运营细检",
       start: "2026-08-18",
       end: "2026-08-21",
+      dependencies: ["4-26"],
       progress: 0
     },
     {
@@ -460,6 +476,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "运营细检问题整改",
       start: "2026-08-22",
       end: "2026-08-28",
+      dependencies: ["4-27"],
       progress: 0
     },
     {
@@ -469,6 +486,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "空气治理",
       start: "2026-08-18",
       end: "2026-08-19",
+      dependencies: ["4-26"],
       progress: 0
     },
     {
@@ -478,6 +496,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "空气检测及报告（2次）",
       start: "2026-08-20",
       end: "2026-08-29",
+      dependencies: ["4-29"],
       progress: 0
     },
     {
@@ -487,6 +506,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "精保洁",
       start: "2026-08-29",
       end: "2026-08-31",
+      dependencies: ["4-30", "4-28"],
       progress: 0
     },
     // 5. 验收取证
@@ -497,6 +517,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "消防取证",
       start: "2026-07-13",
       end: "2026-08-11",
+      dependencies: ["1-1"],
       progress: 0
     },
     {
@@ -506,6 +527,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "联合验收",
       start: "2026-07-17",
       end: "2026-08-30",
+      dependencies: ["5-1", "4-31"],
       progress: 0
     },
     // 6. 开业
@@ -525,6 +547,7 @@ export const DEMO_PROJECT_PLAN: ProjectPlan = {
       name: "开业",
       start: "2026-09-01",
       end: "2026-09-01",
+      dependencies: ["5-2", "6-1"],
       progress: 0
     }
   ]
