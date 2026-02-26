@@ -4,15 +4,16 @@ import { zhCN } from 'date-fns/locale';
 import { motion } from 'motion/react';
 import Select from 'react-select';
 import { Task } from '../services/gemini';
-import { Calendar as CalendarIcon, LayoutDashboard } from 'lucide-react';
+import { Calendar as CalendarIcon, LayoutDashboard, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface GanttChartProps {
   tasks: Task[];
   onTaskClick?: (taskId: string) => void;
   selectedTaskId?: string;
+  onMoveTask?: (taskId: string, direction: 'up' | 'down') => void;
 }
 
-export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, selectedTaskId }) => {
+export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, selectedTaskId, onMoveTask }) => {
   const rightScrollRef = useRef<HTMLDivElement>(null);
   const leftScrollRef = useRef<HTMLDivElement>(null);
   const isSyncingLeft = useRef(false);
@@ -20,52 +21,23 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showSidebar, setShowSidebar] = useState(true);
 
-  // Drag to scroll state
-  const isDragging = useRef(false);
-  const hasDragged = useRef(false);
-  const startPos = useRef({ x: 0, y: 0 });
-  const scrollPos = useRef({ top: 0, left: 0 });
+  // Keyboard navigation for reordering
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedTaskId) return;
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'SELECT') return;
 
-  const handleMouseDown = (e: React.MouseEvent, ref: React.RefObject<HTMLDivElement | null>) => {
-    if (!ref.current) return;
-    isDragging.current = true;
-    hasDragged.current = false;
-    startPos.current = { x: e.pageX, y: e.pageY };
-    scrollPos.current = { 
-      top: ref.current.scrollTop, 
-      left: ref.current.scrollLeft 
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        onMoveTask?.(selectedTaskId, 'up');
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        onMoveTask?.(selectedTaskId, 'down');
+      }
     };
-  };
-
-  const handleMouseMove = (e: React.MouseEvent, ref: React.RefObject<HTMLDivElement | null>) => {
-    if (!isDragging.current || !ref.current) return;
-    
-    const dx = e.pageX - startPos.current.x;
-    const dy = e.pageY - startPos.current.y;
-    
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      hasDragged.current = true;
-    }
-    
-    if (hasDragged.current) {
-      e.preventDefault();
-      ref.current.scrollTop = scrollPos.current.top - dy;
-      ref.current.scrollLeft = scrollPos.current.left - dx;
-    }
-  };
-
-  const handleMouseUpOrLeave = () => {
-    isDragging.current = false;
-  };
-
-  const handleTaskClick = (taskId: string, e: React.MouseEvent) => {
-    if (hasDragged.current) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    onTaskClick?.(taskId);
-  };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedTaskId, onMoveTask]);
 
   const [selectedMilestoneNames, setSelectedMilestoneNames] = useState<string[]>([
     '非居改保认定书',
@@ -232,13 +204,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
             <div className="hidden sm:block w-16 text-right">实际 (天)</div>
           </div>
           <div 
-            className="flex-1 overflow-y-auto divide-y divide-gray-100 cursor-grab active:cursor-grabbing select-none"
+            className="flex-1 overflow-y-auto divide-y divide-gray-100"
             ref={leftScrollRef}
             onScroll={handleLeftScroll}
-            onMouseDown={(e) => handleMouseDown(e, leftScrollRef)}
-            onMouseMove={(e) => handleMouseMove(e, leftScrollRef)}
-            onMouseUp={handleMouseUpOrLeave}
-            onMouseLeave={handleMouseUpOrLeave}
           >
             {tasks.map((task) => {
               const taskStart = parseISO(task.start);
@@ -254,11 +222,23 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
                 <div 
                   key={task.id} 
                   className={`flex items-center px-2 sm:px-4 py-3 hover:bg-gray-50 transition-colors h-16 text-[9px] sm:text-sm border-b border-gray-100 cursor-pointer ${selectedTaskId === task.id ? 'bg-indigo-50/50' : ''}`}
-                  onClick={(e) => handleTaskClick(task.id, e)}
+                  onClick={() => onTaskClick?.(task.id)}
                 >
                   <div className="w-10 sm:w-20 flex-shrink-0 truncate text-gray-500 pr-1 sm:pr-2" title={task.category}>{task.category}</div>
                   <div className="hidden sm:block w-24 flex-shrink-0 truncate text-gray-400 pr-2" title={task.subcategory}>{task.subcategory}</div>
-                  <div className="flex-1 truncate text-gray-500 pr-1 sm:pr-2 font-medium" title={task.name}>{task.name}</div>
+                  <div className="flex-1 truncate text-gray-500 pr-1 sm:pr-2 font-medium flex items-center justify-between" title={task.name}>
+                    <span className="truncate">{task.name}</span>
+                    {selectedTaskId === task.id && (
+                      <div className="flex items-center gap-0.5 ml-1 flex-shrink-0">
+                        <button onClick={(e) => { e.stopPropagation(); onMoveTask?.(task.id, 'up'); }} className="p-1 hover:bg-indigo-100 rounded text-indigo-600" title="上移">
+                          <ArrowUp className="w-3 h-3" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); onMoveTask?.(task.id, 'down'); }} className="p-1 hover:bg-indigo-100 rounded text-indigo-600" title="下移">
+                          <ArrowDown className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <div className="w-8 sm:w-16 text-right text-gray-500 font-medium tabular-nums">{durationDays}</div>
                   <div className="hidden sm:block w-16 text-right text-gray-500 font-medium tabular-nums">{actualDurationText}</div>
                 </div>
@@ -271,11 +251,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
         <div 
           ref={rightScrollRef}
           onScroll={handleRightScroll}
-          onMouseDown={(e) => handleMouseDown(e, rightScrollRef)}
-          onMouseMove={(e) => handleMouseMove(e, rightScrollRef)}
-          onMouseUp={handleMouseUpOrLeave}
-          onMouseLeave={handleMouseUpOrLeave}
-          className="flex-1 overflow-auto bg-white relative cursor-grab active:cursor-grabbing select-none"
+          className="flex-1 overflow-auto bg-white relative"
         >
           <div className="min-w-max">
             {/* Header Row */}
@@ -323,7 +299,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick, sele
                   <div 
                     key={task.id} 
                     className={`h-16 relative flex flex-col justify-center border-b border-gray-100 z-10 group hover:bg-gray-50/50 transition-colors cursor-pointer ${selectedTaskId === task.id ? 'bg-indigo-50/30' : ''}`}
-                    onClick={(e) => handleTaskClick(task.id, e)}
+                    onClick={() => onTaskClick?.(task.id)}
                   >
                     {/* Planned Bar */}
                     <motion.div

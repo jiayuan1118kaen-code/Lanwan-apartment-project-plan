@@ -27,6 +27,8 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
   const [editEnd, setEditEnd] = useState<string>('');
   const [editActualStart, setEditActualStart] = useState<string>('');
   const [editActualEnd, setEditActualEnd] = useState<string>('');
+  const [editCategory, setEditCategory] = useState<string>('');
+  const [editSubcategory, setEditSubcategory] = useState<string>('');
   const [autoProgress, setAutoProgress] = useState<boolean>(true);
 
   // Add Task Modal State
@@ -81,6 +83,8 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
       setEditEnd(selectedTask.end);
       setEditActualStart(selectedTask.actualStart || '');
       setEditActualEnd(selectedTask.actualEnd || '');
+      setEditCategory(selectedTask.category || '');
+      setEditSubcategory(selectedTask.subcategory || '');
     }
   }, [selectedTask]);
 
@@ -164,7 +168,9 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
         start: editStart,
         end: editEnd,
         actualStart: editActualStart || undefined,
-        actualEnd: editActualEnd || undefined
+        actualEnd: editActualEnd || undefined,
+        category: editCategory,
+        subcategory: editSubcategory
       });
     }
   };
@@ -174,7 +180,9 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
     editStart !== selectedTask.start ||
     editEnd !== selectedTask.end ||
     editActualStart !== (selectedTask.actualStart || '') ||
-    editActualEnd !== (selectedTask.actualEnd || '')
+    editActualEnd !== (selectedTask.actualEnd || '') ||
+    editCategory !== (selectedTask.category || '') ||
+    editSubcategory !== (selectedTask.subcategory || '')
   );
 
   const handleOpenAddModal = () => {
@@ -353,6 +361,29 @@ export const TaskLookup: React.FC<TaskLookupProps> = ({ tasks, onUpdateTask, onA
                 <Trash2 className="w-3 h-3" />
                 删除
               </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mb-3">
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">修改一级分类</label>
+              <input 
+                type="text" 
+                value={editCategory}
+                onChange={(e) => setEditCategory(e.target.value)}
+                className="w-full p-2 bg-white border border-gray-200 rounded-lg text-gray-700 text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                placeholder="输入一级分类"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">修改二级分类</label>
+              <input 
+                type="text" 
+                value={editSubcategory}
+                onChange={(e) => setEditSubcategory(e.target.value)}
+                className="w-full p-2 bg-white border border-gray-200 rounded-lg text-gray-700 text-xs focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                placeholder="输入二级分类"
+              />
             </div>
           </div>
 

@@ -20,20 +20,9 @@ interface Version {
   plan: ProjectPlan;
 }
 
-const sortTasks = (tasks: Task[], baseOrderTasks: Task[]) => {
-  const categoryOrder = Array.from(new Set(baseOrderTasks.map(t => t.category)));
-  return [...tasks].sort((a, b) => {
-    let indexA = categoryOrder.indexOf(a.category);
-    let indexB = categoryOrder.indexOf(b.category);
-    if (indexA === -1) indexA = categoryOrder.length;
-    if (indexB === -1) indexB = categoryOrder.length;
-    
-    if (indexA !== indexB) return indexA - indexB;
-    
-    const dateA = parseISO(a.start).getTime();
-    const dateB = parseISO(b.start).getTime();
-    return dateA - dateB;
-  });
+const sortTasksByCategory = (tasks: Task[]) => {
+  const categories = Array.from(new Set(tasks.map(t => t.category)));
+  return categories.flatMap(c => tasks.filter(t => t.category === c));
 };
 
 export default function App() {
@@ -149,10 +138,10 @@ export default function App() {
             }
           }
         }
-        return { ...prev, tasks: sortTasks(Array.from(taskMap.values()), prev.tasks) };
+        return { ...prev, tasks: sortTasksByCategory(Array.from(taskMap.values())) };
       }
 
-      return { ...prev, tasks: sortTasks(newTasks, prev.tasks) };
+      return { ...prev, tasks: sortTasksByCategory(newTasks) };
     });
   };
 
@@ -165,12 +154,45 @@ export default function App() {
       };
       
       const updatedTasks = [...prev.tasks, newTask];
-      const sortedTasks = sortTasks(updatedTasks, prev.tasks);
+      const sortedTasks = sortTasksByCategory(updatedTasks);
 
       return {
         ...prev,
         tasks: sortedTasks
       };
+    });
+  };
+
+  const handleMoveTask = (taskId: string, direction: 'up' | 'down') => {
+    setPlan(prev => {
+      const newTasks = [...prev.tasks];
+      const index = newTasks.findIndex(t => t.id === taskId);
+      if (index < 0) return prev;
+
+      const task = newTasks[index];
+      let targetIndex = -1;
+
+      if (direction === 'up') {
+        for (let i = index - 1; i >= 0; i--) {
+          if (newTasks[i].category === task.category) {
+            targetIndex = i;
+            break;
+          }
+        }
+      } else {
+        for (let i = index + 1; i < newTasks.length; i++) {
+          if (newTasks[i].category === task.category) {
+            targetIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (targetIndex !== -1) {
+        [newTasks[index], newTasks[targetIndex]] = [newTasks[targetIndex], newTasks[index]];
+      }
+
+      return { ...prev, tasks: newTasks };
     });
   };
 
@@ -481,6 +503,7 @@ export default function App() {
             tasks={plan.tasks} 
             onTaskClick={setSelectedTaskId}
             selectedTaskId={selectedTaskId}
+            onMoveTask={handleMoveTask}
           />
         </motion.div>
       </main>
