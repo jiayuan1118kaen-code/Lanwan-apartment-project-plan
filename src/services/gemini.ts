@@ -23,7 +23,7 @@ export interface ProjectPlan {
 
 export async function parseProjectPlan(text: string): Promise<ProjectPlan> {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.1-pro-preview",
     contents: `Parse the following project plan text into a structured JSON format for a Gantt chart. 
     Ensure dates are in YYYY-MM-DD format. If dates are not specified, estimate reasonable dates starting from today (${new Date().toISOString().split('T')[0]}).
     If the input text is in Chinese, ensure the output fields (projectName, task names, categories, subcategories) are also in Chinese.
